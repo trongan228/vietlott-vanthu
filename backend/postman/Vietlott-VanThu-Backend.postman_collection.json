@@ -1,0 +1,1996 @@
+{
+  "info": {
+    "_postman_id": "7245ee29-0259-4c0d-8e6c-e5b7e405b896",
+    "name": "Vietlott Văn Thư - Backend API",
+    "description": "API quản lý văn thư nội bộ Vietlott (Go + Gin + pgx, PostgreSQL/Neon).\n\nBase URL mặc định: http://localhost:8080 (đổi biến `baseUrl` nếu deploy nơi khác).\n\nMỗi folder CRUD có 5 request: Create / List / Get by ID / Update / Delete.\nRequest 'Tạo mới (Create)' có script tự động lưu `id` trả về vào biến collection tương ứng (vd `van_ban_den_id`) để các request Get/Update/Delete phía dưới dùng ngay mà không cần sửa tay.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "healthz"
+              ]
+            },
+            "description": "Kiểm tra server còn sống."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Văn bản đến",
+      "description": "CRUD cho bảng van_ban_den. Ràng buộc UNIQUE(nam, so_den).\n\nList hỗ trợ: lọc nam / so_den / so_ky_hieu (gần đúng) / noi_gui_id (đơn vị ban hành) / don_vi_xu_ly_id / q (trích yếu, gần đúng); sắp xếp sort_by ∈ {so_den, ngay_den, ngay_van_ban, nam, created_at}, sort_dir ∈ {asc, desc}.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-den",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-den"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `van_ban_den_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nam\": 2026,\n  \"so_den\": 150,\n  \"ngay_den\": \"2026-07-03\",\n  \"noi_gui_id\": 1,\n  \"noi_gui_text\": \"Ngân hàng Nhà nước Việt Nam\",\n  \"so_ky_hieu\": \"123/NHNN-TTGSNH\",\n  \"ngay_van_ban\": \"2026-07-01\",\n  \"trich_yeu\": \"Về việc báo cáo tình hình hoạt động kinh doanh xổ số\",\n  \"don_vi_xu_ly_id\": 2,\n  \"don_vi_nhan_text\": \"Phòng Kế toán\",\n  \"ky_nhan\": \"Nguyễn Văn A\",\n  \"ghi_chu\": \"Văn bản khẩn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('van_ban_den_id', json.id);",
+                  "    console.log('Saved van_ban_den_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-den?nam=2026&so_den=150&so_ky_hieu=123/NHNN&noi_gui_id=1&don_vi_xu_ly_id=2&q=báo cáo&sort_by=ngay_den&sort_dir=desc&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-den"
+              ],
+              "query": [
+                {
+                  "key": "nam",
+                  "value": "2026",
+                  "disabled": true
+                },
+                {
+                  "key": "so_den",
+                  "value": "150",
+                  "disabled": true
+                },
+                {
+                  "key": "so_ky_hieu",
+                  "value": "123/NHNN",
+                  "disabled": true
+                },
+                {
+                  "key": "noi_gui_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "don_vi_xu_ly_id",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "báo cáo",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "ngay_den",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_dir",
+                  "value": "desc",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-den/{{van_ban_den_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-den",
+                "{{van_ban_den_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `van_ban_den_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-den/{{van_ban_den_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-den",
+                "{{van_ban_den_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `van_ban_den_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nam\": 2026,\n  \"so_den\": 150,\n  \"ngay_den\": \"2026-07-03\",\n  \"noi_gui_id\": 1,\n  \"noi_gui_text\": \"Ngân hàng Nhà nước Việt Nam\",\n  \"so_ky_hieu\": \"123/NHNN-TTGSNH\",\n  \"ngay_van_ban\": \"2026-07-01\",\n  \"trich_yeu\": \"Về việc báo cáo tình hình hoạt động kinh doanh xổ số\",\n  \"don_vi_xu_ly_id\": 2,\n  \"don_vi_nhan_text\": \"Phòng Kế toán\",\n  \"ky_nhan\": \"Nguyễn Văn A\",\n  \"ghi_chu\": \"Văn bản khẩn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-den/{{van_ban_den_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-den",
+                "{{van_ban_den_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `van_ban_den_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Văn bản đi - Không tên loại",
+      "description": "CRUD cho bảng van_ban_di_khong_ten_loai. Ràng buộc UNIQUE(nam, so_ky_hieu).\n\nList hỗ trợ: lọc nam / so_ky_hieu (gần đúng) / nguoi_ky_id / q (trích yếu, gần đúng); sắp xếp sort_by ∈ {so_ky_hieu, ngay_van_ban, nam, created_at}, sort_dir ∈ {asc, desc}.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-khong-ten-loai",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-khong-ten-loai"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `van_ban_di_khong_ten_loai_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nam\": 2026,\n  \"so_ky_hieu\": \"45/VTVP\",\n  \"ngay_van_ban\": \"2026-07-02\",\n  \"trich_yeu\": \"Về việc mời họp giao ban tháng 7\",\n  \"nguoi_ky_id\": 3,\n  \"nguoi_ky_text\": \"Trần Thị B\",\n  \"noi_nhan_text\": \"Các phòng ban trực thuộc\",\n  \"so_luong_ban\": 10,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('van_ban_di_khong_ten_loai_id', json.id);",
+                  "    console.log('Saved van_ban_di_khong_ten_loai_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-khong-ten-loai?nam=2026&so_ky_hieu=45/VTVP&nguoi_ky_id=3&q=họp&sort_by=ngay_van_ban&sort_dir=desc&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-khong-ten-loai"
+              ],
+              "query": [
+                {
+                  "key": "nam",
+                  "value": "2026",
+                  "disabled": true
+                },
+                {
+                  "key": "so_ky_hieu",
+                  "value": "45/VTVP",
+                  "disabled": true
+                },
+                {
+                  "key": "nguoi_ky_id",
+                  "value": "3",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "họp",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "ngay_van_ban",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_dir",
+                  "value": "desc",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-khong-ten-loai/{{van_ban_di_khong_ten_loai_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-khong-ten-loai",
+                "{{van_ban_di_khong_ten_loai_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `van_ban_di_khong_ten_loai_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-khong-ten-loai/{{van_ban_di_khong_ten_loai_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-khong-ten-loai",
+                "{{van_ban_di_khong_ten_loai_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `van_ban_di_khong_ten_loai_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nam\": 2026,\n  \"so_ky_hieu\": \"45/VTVP\",\n  \"ngay_van_ban\": \"2026-07-02\",\n  \"trich_yeu\": \"Về việc mời họp giao ban tháng 7\",\n  \"nguoi_ky_id\": 3,\n  \"nguoi_ky_text\": \"Trần Thị B\",\n  \"noi_nhan_text\": \"Các phòng ban trực thuộc\",\n  \"so_luong_ban\": 10,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-khong-ten-loai/{{van_ban_di_khong_ten_loai_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-khong-ten-loai",
+                "{{van_ban_di_khong_ten_loai_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `van_ban_di_khong_ten_loai_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Văn bản đi - Có tên loại",
+      "description": "CRUD cho bảng van_ban_di_co_ten_loai. Ràng buộc UNIQUE(nam, so_ky_hieu).\n\nList hỗ trợ: lọc nam / loai_van_ban_id (loại văn bản) / so_ky_hieu (gần đúng) / nguoi_ky_id / q (trích yếu, gần đúng); sắp xếp sort_by ∈ {so_ky_hieu, ngay_van_ban, nam, created_at}, sort_dir ∈ {asc, desc}.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-co-ten-loai",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-co-ten-loai"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `van_ban_di_co_ten_loai_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nam\": 2026,\n  \"loai_van_ban_id\": 1,\n  \"so_ky_hieu\": \"12/QĐ-VTVP\",\n  \"ngay_van_ban\": \"2026-07-02\",\n  \"trich_yeu\": \"Quyết định về việc thành lập tổ công tác\",\n  \"nguoi_ky_id\": 3,\n  \"nguoi_ky_text\": \"Trần Thị B\",\n  \"noi_nhan_text\": \"Các đơn vị liên quan\",\n  \"so_luong_ban\": 5,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('van_ban_di_co_ten_loai_id', json.id);",
+                  "    console.log('Saved van_ban_di_co_ten_loai_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-co-ten-loai?nam=2026&loai_van_ban_id=1&so_ky_hieu=12/QĐ-VTVP&nguoi_ky_id=3&q=quyết định&sort_by=ngay_van_ban&sort_dir=desc&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-co-ten-loai"
+              ],
+              "query": [
+                {
+                  "key": "nam",
+                  "value": "2026",
+                  "disabled": true
+                },
+                {
+                  "key": "loai_van_ban_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "so_ky_hieu",
+                  "value": "12/QĐ-VTVP",
+                  "disabled": true
+                },
+                {
+                  "key": "nguoi_ky_id",
+                  "value": "3",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "quyết định",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "ngay_van_ban",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_dir",
+                  "value": "desc",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-co-ten-loai/{{van_ban_di_co_ten_loai_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-co-ten-loai",
+                "{{van_ban_di_co_ten_loai_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `van_ban_di_co_ten_loai_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-co-ten-loai/{{van_ban_di_co_ten_loai_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-co-ten-loai",
+                "{{van_ban_di_co_ten_loai_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `van_ban_di_co_ten_loai_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nam\": 2026,\n  \"loai_van_ban_id\": 1,\n  \"so_ky_hieu\": \"12/QĐ-VTVP\",\n  \"ngay_van_ban\": \"2026-07-02\",\n  \"trich_yeu\": \"Quyết định về việc thành lập tổ công tác\",\n  \"nguoi_ky_id\": 3,\n  \"nguoi_ky_text\": \"Trần Thị B\",\n  \"noi_nhan_text\": \"Các đơn vị liên quan\",\n  \"so_luong_ban\": 5,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban-di-co-ten-loai/{{van_ban_di_co_ten_loai_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban-di-co-ten-loai",
+                "{{van_ban_di_co_ten_loai_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `van_ban_di_co_ten_loai_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Danh mục - Loại văn bản",
+      "description": "CRUD cho bảng danh mục loai_van_ban (ma_loai UNIQUE).",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/loai-van-ban",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "loai-van-ban"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `loai_van_ban_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma_loai\": \"QĐ\",\n  \"ten_loai\": \"Quyết định\",\n  \"thoi_han_bao_quan_nam\": 20,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('loai_van_ban_id', json.id);",
+                  "    console.log('Saved loai_van_ban_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/loai-van-ban?q=quyết định&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "loai-van-ban"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "quyết định",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/loai-van-ban/{{loai_van_ban_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "loai-van-ban",
+                "{{loai_van_ban_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `loai_van_ban_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/loai-van-ban/{{loai_van_ban_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "loai-van-ban",
+                "{{loai_van_ban_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `loai_van_ban_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma_loai\": \"QĐ\",\n  \"ten_loai\": \"Quyết định\",\n  \"thoi_han_bao_quan_nam\": 20,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/loai-van-ban/{{loai_van_ban_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "loai-van-ban",
+                "{{loai_van_ban_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `loai_van_ban_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Danh mục - Đơn vị",
+      "description": "CRUD cho bảng danh mục don_vi. loai_don_vi ∈ {noi_bo, chi_nhanh, doi_tac, to_chuc}.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/don-vi",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "don-vi"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `don_vi_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma_don_vi\": \"CN-HN\",\n  \"ten_don_vi\": \"Chi nhánh Hà Nội\",\n  \"loai_don_vi\": \"chi_nhanh\",\n  \"dia_chi\": \"Số 1 Trần Hưng Đạo, Hà Nội\",\n  \"ghi_chu\": null,\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('don_vi_id', json.id);",
+                  "    console.log('Saved don_vi_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/don-vi?loai_don_vi=chi_nhanh&is_active=true&q=Hà Nội&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "don-vi"
+              ],
+              "query": [
+                {
+                  "key": "loai_don_vi",
+                  "value": "chi_nhanh",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "Hà Nội",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/don-vi/{{don_vi_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "don-vi",
+                "{{don_vi_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `don_vi_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/don-vi/{{don_vi_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "don-vi",
+                "{{don_vi_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `don_vi_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma_don_vi\": \"CN-HN\",\n  \"ten_don_vi\": \"Chi nhánh Hà Nội\",\n  \"loai_don_vi\": \"chi_nhanh\",\n  \"dia_chi\": \"Số 1 Trần Hưng Đạo, Hà Nội\",\n  \"ghi_chu\": null,\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/don-vi/{{don_vi_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "don-vi",
+                "{{don_vi_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `don_vi_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Danh mục - Cán bộ",
+      "description": "CRUD cho bảng danh mục can_bo.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/can-bo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "can-bo"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `can_bo_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Nguyễn Văn A\",\n  \"chuc_danh\": \"Chuyên viên văn thư\",\n  \"don_vi_id\": 1,\n  \"so_dien_thoai\": \"0912345678\",\n  \"email\": \"nguyenvana@vietlott.vn\",\n  \"is_van_thu\": true,\n  \"is_active\": true,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('can_bo_id', json.id);",
+                  "    console.log('Saved can_bo_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/can-bo?don_vi_id=1&is_van_thu=true&is_active=true&q=Nguyễn&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "can-bo"
+              ],
+              "query": [
+                {
+                  "key": "don_vi_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "is_van_thu",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "Nguyễn",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/can-bo/{{can_bo_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "can-bo",
+                "{{can_bo_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `can_bo_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/can-bo/{{can_bo_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "can-bo",
+                "{{can_bo_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `can_bo_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Nguyễn Văn A\",\n  \"chuc_danh\": \"Chuyên viên văn thư\",\n  \"don_vi_id\": 1,\n  \"so_dien_thoai\": \"0912345678\",\n  \"email\": \"nguyenvana@vietlott.vn\",\n  \"is_van_thu\": true,\n  \"is_active\": true,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/can-bo/{{can_bo_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "can-bo",
+                "{{can_bo_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `can_bo_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Lưu kho - Thùng",
+      "description": "CRUD cho bảng thung (carton lưu kho). ma_thung UNIQUE.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/thung",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "thung"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `thung_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma_thung\": \"VTVP-0099\",\n  \"so_serial\": \"006999\",\n  \"dot_luu_kho\": 3,\n  \"vi_tri_kho\": \"Kệ A - Tầng 2\",\n  \"ngay_nhap_kho\": \"2026-06-15\",\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('thung_id', json.id);",
+                  "    console.log('Saved thung_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/thung?dot_luu_kho=3&q=VTVP&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "thung"
+              ],
+              "query": [
+                {
+                  "key": "dot_luu_kho",
+                  "value": "3",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "VTVP",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/thung/{{thung_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "thung",
+                "{{thung_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `thung_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/thung/{{thung_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "thung",
+                "{{thung_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `thung_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma_thung\": \"VTVP-0099\",\n  \"so_serial\": \"006999\",\n  \"dot_luu_kho\": 3,\n  \"vi_tri_kho\": \"Kệ A - Tầng 2\",\n  \"ngay_nhap_kho\": \"2026-06-15\",\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/thung/{{thung_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "thung",
+                "{{thung_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `thung_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Lưu kho - Hộp",
+      "description": "CRUD cho bảng hop. Ràng buộc UNIQUE(so_hop, loai_hop); loai_hop ∈ {thoi_han, vinh_vien}.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hop",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hop"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `hop_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"so_hop\": 20,\n  \"loai_hop\": \"thoi_han\",\n  \"thung_id\": 1,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('hop_id', json.id);",
+                  "    console.log('Saved hop_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hop?so_hop=20&loai_hop=thoi_han&thung_id=1&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hop"
+              ],
+              "query": [
+                {
+                  "key": "so_hop",
+                  "value": "20",
+                  "disabled": true
+                },
+                {
+                  "key": "loai_hop",
+                  "value": "thoi_han",
+                  "disabled": true
+                },
+                {
+                  "key": "thung_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hop/{{hop_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hop",
+                "{{hop_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `hop_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hop/{{hop_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hop",
+                "{{hop_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `hop_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"so_hop\": 20,\n  \"loai_hop\": \"thoi_han\",\n  \"thung_id\": 1,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hop/{{hop_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hop",
+                "{{hop_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `hop_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Lưu kho - Hồ sơ lưu trữ",
+      "description": "CRUD cho bảng ho_so_luu_tru (tập lưu văn bản). so_ho_so UNIQUE.",
+      "item": [
+        {
+          "name": "Tạo mới (Create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ho-so-luu-tru",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ho-so-luu-tru"
+              ]
+            },
+            "description": "Tạo mới một bản ghi. ID trả về sẽ tự động lưu vào biến `ho_so_luu_tru_id` để dùng cho các request Get/Update/Delete bên dưới.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"so_ho_so\": 1800,\n  \"hop_id\": 1,\n  \"tieu_de\": \"Tập lưu công văn đến năm 2026 (số 1-100)\",\n  \"loai_tap\": \"CV_DEN\",\n  \"nam\": 2026,\n  \"tu_ngay\": \"2026-01-01\",\n  \"den_ngay\": \"2026-06-30\",\n  \"tu_so\": 1,\n  \"den_so\": 100,\n  \"so_to\": null,\n  \"thoi_han_bao_quan_nam\": 20,\n  \"vinh_vien\": false,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('ho_so_luu_tru_id', json.id);",
+                  "    console.log('Saved ho_so_luu_tru_id =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ho-so-luu-tru?hop_id=1&loai_tap=CV_DEN&nam=2026&vinh_vien=false&q=công văn&page=1&page_size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ho-so-luu-tru"
+              ],
+              "query": [
+                {
+                  "key": "hop_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "loai_tap",
+                  "value": "CV_DEN",
+                  "disabled": true
+                },
+                {
+                  "key": "nam",
+                  "value": "2026",
+                  "disabled": true
+                },
+                {
+                  "key": "vinh_vien",
+                  "value": "false",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "công văn",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lấy danh sách có phân trang & lọc. Bật (enable) các query param cần dùng trong tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết theo ID (Get by ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ho-so-luu-tru/{{ho_so_luu_tru_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ho-so-luu-tru",
+                "{{ho_so_luu_tru_id}}"
+              ]
+            },
+            "description": "Lấy chi tiết 1 bản ghi theo id (biến `ho_so_luu_tru_id`)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ho-so-luu-tru/{{ho_so_luu_tru_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ho-so-luu-tru",
+                "{{ho_so_luu_tru_id}}"
+              ]
+            },
+            "description": "Cập nhật toàn bộ bản ghi theo id (biến `ho_so_luu_tru_id`). Đây là full-update, phải gửi đủ các trường bắt buộc.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"so_ho_so\": 1800,\n  \"hop_id\": 1,\n  \"tieu_de\": \"Tập lưu công văn đến năm 2026 (số 1-100)\",\n  \"loai_tap\": \"CV_DEN\",\n  \"nam\": 2026,\n  \"tu_ngay\": \"2026-01-01\",\n  \"den_ngay\": \"2026-06-30\",\n  \"tu_so\": 1,\n  \"den_so\": 100,\n  \"so_to\": null,\n  \"thoi_han_bao_quan_nam\": 20,\n  \"vinh_vien\": false,\n  \"ghi_chu\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ho-so-luu-tru/{{ho_so_luu_tru_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ho-so-luu-tru",
+                "{{ho_so_luu_tru_id}}"
+              ]
+            },
+            "description": "Xóa bản ghi theo id (biến `ho_so_luu_tru_id`). Trả về 204 No Content nếu thành công."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tra cứu vị trí văn bản (chỉ đọc)",
+      "description": "Tra cứu văn bản đang nằm ở hồ sơ/hộp/thùng nào, dựa trên 3 view v_vi_tri_van_ban_*.",
+      "item": [
+        {
+          "name": "Vị trí văn bản đến",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vi-tri/van-ban-den?nam=2022&so_den=150",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vi-tri",
+                "van-ban-den"
+              ],
+              "query": [
+                {
+                  "key": "nam",
+                  "value": "2022",
+                  "disabled": false
+                },
+                {
+                  "key": "so_den",
+                  "value": "150",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Tương ứng ví dụ trong migration: văn bản đến số 150 năm 2022 nằm ở đâu."
+          },
+          "response": []
+        },
+        {
+          "name": "Vị trí văn bản đi - Có tên loại",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vi-tri/van-ban-di-co-ten-loai?nam=2022&so_ky_hieu=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vi-tri",
+                "van-ban-di-co-ten-loai"
+              ],
+              "query": [
+                {
+                  "key": "nam",
+                  "value": "2022",
+                  "disabled": false
+                },
+                {
+                  "key": "so_ky_hieu",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Vị trí văn bản đi - Không tên loại",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vi-tri/van-ban-di-khong-ten-loai?nam=2022&so_ky_hieu=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vi-tri",
+                "van-ban-di-khong-ten-loai"
+              ],
+              "query": [
+                {
+                  "key": "nam",
+                  "value": "2022",
+                  "disabled": false
+                },
+                {
+                  "key": "so_ky_hieu",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tìm kiếm văn bản",
+      "description": "Tìm kiếm hợp nhất trên cả 3 bảng văn bản (đến / đi không tên loại / đi có tên loại).\n\nTham số: q = tên/trích yếu (gần đúng); so = số văn bản (gần đúng theo so_ky_hieu, với văn bản đến khớp thêm so_den); nam = lọc theo năm; limit = số kết quả tối đa mỗi bảng (mặc định 20, tối đa 50). Bắt buộc có ít nhất một trong q hoặc so.",
+      "item": [
+        {
+          "name": "Tìm theo tên (trích yếu)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban/tim-kiem?q=báo cáo&so=&nam=2026&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban",
+                "tim-kiem"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "báo cáo",
+                  "disabled": false
+                },
+                {
+                  "key": "so",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "nam",
+                  "value": "2026",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Tìm văn bản có trích yếu chứa cụm từ, trên cả 3 bảng."
+          },
+          "response": []
+        },
+        {
+          "name": "Tìm theo số văn bản",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban/tim-kiem?q=&so=123&nam=2026&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban",
+                "tim-kiem"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "so",
+                  "value": "123",
+                  "disabled": false
+                },
+                {
+                  "key": "nam",
+                  "value": "2026",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Tìm theo số văn bản: khớp gần đúng so_ky_hieu; với văn bản đến khớp thêm so_den."
+          },
+          "response": []
+        },
+        {
+          "name": "Tìm kết hợp tên + số + năm",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/van-ban/tim-kiem?q=báo cáo&so=123&nam=2026&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "van-ban",
+                "tim-kiem"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "báo cáo",
+                  "disabled": false
+                },
+                {
+                  "key": "so",
+                  "value": "123",
+                  "disabled": false
+                },
+                {
+                  "key": "nam",
+                  "value": "2026",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "van_ban_den_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "van_ban_di_khong_ten_loai_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "van_ban_di_co_ten_loai_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "loai_van_ban_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "don_vi_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "can_bo_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "thung_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "hop_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "ho_so_luu_tru_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
