@@ -21,7 +21,7 @@ func Load() Config {
 
 	cfg := Config{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
-		Port:        os.Getenv("PORT"),
+		Port:        "10000",
 	}
 
 	if cfg.DatabaseURL == "" {
