@@ -21,14 +21,14 @@ func Load() Config {
 
 	cfg := Config{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
-		Port:        "10000",
+		Port:        os.Getenv("PORT"),
 	}
 
 	if cfg.DatabaseURL == "" {
 		log.Fatal("thiếu biến môi trường DATABASE_URL")
 	}
 	if cfg.Port == "" {
-		cfg.Port = "8080"
+		cfg.Port = "10000"
 	}
 
 	return cfg
