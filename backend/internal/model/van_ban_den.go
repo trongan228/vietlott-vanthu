@@ -17,6 +17,7 @@ type VanBanDen struct {
 	DonViNhanText *string   `json:"don_vi_nhan_text"`
 	KyNhan        *string   `json:"ky_nhan"`
 	GhiChu        *string   `json:"ghi_chu"`
+	HoSoID        *int32    `json:"ho_so_id"` // hồ sơ lưu trữ đã gán (NULL nếu chưa xác định)
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }

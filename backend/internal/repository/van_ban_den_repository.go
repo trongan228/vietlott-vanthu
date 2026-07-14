@@ -23,7 +23,7 @@ func NewVanBanDenRepository(db *pgxpool.Pool) *VanBanDenRepository {
 
 const vanBanDenColumns = `id, nam, so_den, ngay_den, noi_gui_id, noi_gui_text, so_ky_hieu,
 	ngay_van_ban, trich_yeu, don_vi_xu_ly_id, don_vi_nhan_text, ky_nhan, ghi_chu,
-	created_at, updated_at`
+	ho_so_id, created_at, updated_at`
 
 func scanVanBanDen(row pgx.Row) (*model.VanBanDen, error) {
 	var (
@@ -35,7 +35,7 @@ func scanVanBanDen(row pgx.Row) (*model.VanBanDen, error) {
 	err := row.Scan(
 		&m.ID, &m.Nam, &m.SoDen, &ngayDen, &m.NoiGuiID, &m.NoiGuiText, &m.SoKyHieu,
 		&ngayVanBan, &m.TrichYeu, &m.DonViXuLyID, &m.DonViNhanText, &m.KyNhan, &m.GhiChu,
-		&m.CreatedAt, &m.UpdatedAt,
+		&m.HoSoID, &m.CreatedAt, &m.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -135,7 +135,8 @@ func (r *VanBanDenRepository) List(ctx context.Context, f model.VanBanDenFilter)
 		argN++
 	}
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf("trich_yeu ILIKE $%d", argN))
+		// q khớp gần đúng theo tên/trích yếu, số văn bản hoặc số đến.
+		where = append(where, fmt.Sprintf("(trich_yeu ILIKE $%d OR so_ky_hieu ILIKE $%d OR so_den::text ILIKE $%d)", argN, argN, argN))
 		args = append(args, "%"+f.Search+"%")
 		argN++
 	}

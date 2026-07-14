@@ -22,7 +22,7 @@ func NewVanBanDiCoTenLoaiRepository(db *pgxpool.Pool) *VanBanDiCoTenLoaiReposito
 }
 
 const vanBanDiCoTenLoaiColumns = `id, nam, loai_van_ban_id, so_ky_hieu, ngay_van_ban, trich_yeu,
-	nguoi_ky_id, nguoi_ky_text, noi_nhan_text, so_luong_ban, ghi_chu, created_at, updated_at`
+	nguoi_ky_id, nguoi_ky_text, noi_nhan_text, so_luong_ban, ghi_chu, ho_so_id, created_at, updated_at`
 
 func scanVanBanDiCoTenLoai(row pgx.Row) (*model.VanBanDiCoTenLoai, error) {
 	var (
@@ -33,7 +33,7 @@ func scanVanBanDiCoTenLoai(row pgx.Row) (*model.VanBanDiCoTenLoai, error) {
 	err := row.Scan(
 		&m.ID, &m.Nam, &m.LoaiVanBanID, &m.SoKyHieu, &ngayVanBan, &m.TrichYeu,
 		&m.NguoiKyID, &m.NguoiKyText, &m.NoiNhanText, &m.SoLuongBan, &m.GhiChu,
-		&m.CreatedAt, &m.UpdatedAt,
+		&m.HoSoID, &m.CreatedAt, &m.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -116,7 +116,8 @@ func (r *VanBanDiCoTenLoaiRepository) List(ctx context.Context, f model.VanBanDi
 		argN++
 	}
 	if f.Search != "" {
-		where = append(where, fmt.Sprintf("trich_yeu ILIKE $%d", argN))
+		// q khớp gần đúng theo tên/trích yếu hoặc số văn bản.
+		where = append(where, fmt.Sprintf("(trich_yeu ILIKE $%d OR so_ky_hieu ILIKE $%d)", argN, argN))
 		args = append(args, "%"+f.Search+"%")
 		argN++
 	}

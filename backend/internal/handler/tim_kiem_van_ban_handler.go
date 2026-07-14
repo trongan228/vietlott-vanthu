@@ -11,8 +11,8 @@ import (
 	"vanthu-backend/internal/service"
 )
 
-// TimKiemVanBanHandler tìm kiếm văn bản theo tên (trích yếu) và số văn bản
-// trên cả 3 bảng cùng lúc.
+// TimKiemVanBanHandler tìm kiếm văn bản theo tên (trích yếu), số văn bản
+// và số đến trên cả 3 bảng cùng lúc.
 type TimKiemVanBanHandler struct {
 	svc *service.TimKiemVanBanService
 }
@@ -26,7 +26,8 @@ func (h *TimKiemVanBanHandler) Register(rg *gin.RouterGroup) {
 }
 
 // TimKiem: GET /van-ban/tim-kiem?q=báo cáo&so=123&nam=2026&limit=20
-// Cần ít nhất một trong q hoặc so.
+// q khớp gần đúng theo tên/trích yếu, số văn bản và số đến;
+// so lọc hẹp chỉ theo số văn bản/số đến. Cần ít nhất một trong q hoặc so.
 func (h *TimKiemVanBanHandler) TimKiem(c *gin.Context) {
 	var p model.TimKiemVanBanParams
 

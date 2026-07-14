@@ -14,6 +14,7 @@ type VanBanDiKhongTenLoai struct {
 	NoiNhanText *string   `json:"noi_nhan_text"`
 	SoLuongBan  *int32    `json:"so_luong_ban"`
 	GhiChu      *string   `json:"ghi_chu"`
+	HoSoID      *int32    `json:"ho_so_id"` // hồ sơ lưu trữ đã gán (NULL nếu chưa xác định)
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
