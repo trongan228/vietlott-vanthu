@@ -1,0 +1,13 @@
+# .env dev trỏ [::1]:8080 — tuyệt đối không để lọt vào build
+# (VITE_API_URL phải rỗng để frontend gọi /api tương đối)
+.env
+.env.*
+
+node_modules/
+dist/
+design/
+*.html
+!index.html
+README.md
+Dockerfile
+.dockerignore

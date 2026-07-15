@@ -1,0 +1,13 @@
+# Tuyệt đối không đưa secrets vào build context
+.env
+
+# Không cần cho build
+.git
+.gitignore
+.claude
+CLAUDE.md
+README.md
+postman/
+migrations/
+Dockerfile
+.dockerignore

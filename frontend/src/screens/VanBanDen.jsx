@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useVanBanDen } from '../hooks/useVanBan.ts';
+import { filterYears } from '../lib/api.ts';
 import { TableLoading, TableError, TableEmpty } from '../components/TableState.jsx';
 import { IconExport, IconImport, IconPlus } from '../components/Icons.jsx';
 
@@ -57,7 +58,7 @@ export default function VanBanDen({ onOpenDetail, onOpenForm, onExport, onImport
           <label>Năm</label>
           <select style={{ minWidth: 90 }} value={year} onChange={e => setYear(e.target.value)}>
             <option value="">Tất cả</option>
-            <option>2026</option><option>2025</option><option>2024</option>
+            {filterYears().map(y => <option key={y}>{y}</option>)}
           </select>
         </div>
         <div className="vl-field">

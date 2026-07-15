@@ -33,28 +33,3 @@ export const loaiVBData = [
   ['CV', 'Công văn', '.../CV-VIETLOTT', '162'],
 ];
 
-export const khoStore = {
-  '512/QĐ-VIETLOTT': {
-    info: { 'Số ký hiệu': '512/QĐ-VIETLOTT', 'Loại văn bản': 'Quyết định', 'Ngày văn bản': '27/06/2026', 'Người ký': 'Nguyễn Thanh Đạm', 'Trích yếu': 'V/v bổ nhiệm Trưởng phòng Công nghệ thông tin' },
-    hoSo: 'HS.2026.QĐ.03', hoSoSub: 'Hồ sơ Quyết định nhân sự 2026',
-    hop: 'Hộp số 12', hopSub: 'Nhóm văn bản đi 2026',
-    thung: 'Thùng T-05', thungSub: 'Lưu trữ dài hạn',
-    location: 'Kho tầng 2 · Dãy B · Kệ 04',
-  },
-  '168/TB-VIETLOTT': {
-    info: { 'Số ký hiệu': '168/TB-VIETLOTT', 'Loại văn bản': 'Thông báo', 'Ngày văn bản': '26/06/2026', 'Người ký': 'Lê Văn Hùng', 'Trích yếu': 'Về lịch nghỉ lễ Quốc khánh 02/9/2026' },
-    hoSo: 'HS.2026.TB.01', hoSoSub: 'Hồ sơ Thông báo chung 2026',
-    hop: 'Hộp số 08', hopSub: 'Nhóm văn bản đi 2026',
-    thung: 'Thùng T-03', thungSub: 'Lưu trữ 5 năm',
-    location: 'Kho tầng 2 · Dãy A · Kệ 02',
-  },
-  '245': {
-    info: { 'Số đến': '245', 'Nơi gửi': 'Bộ Tài chính', 'Số ký hiệu': '1123/BTC-TCT', 'Ngày văn bản': '25/06/2026', 'Trích yếu': 'V/v hướng dẫn quyết toán thuế TNDN năm 2025' },
-    hoSo: 'HS.2026.ĐEN.06', hoSoSub: 'Hồ sơ văn bản đến Q2/2026',
-    hop: 'Hộp số 21', hopSub: 'Văn bản đến 2026',
-    thung: 'Thùng T-11', thungSub: 'Lưu trữ 5 năm',
-    location: 'Kho tầng 1 · Dãy C · Kệ 07',
-  },
-};
-
-export const khoSuggestions = ['512/QĐ-VIETLOTT', '168/TB-VIETLOTT', '245'];

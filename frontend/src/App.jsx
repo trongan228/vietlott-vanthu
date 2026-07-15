@@ -40,7 +40,7 @@ export default function App() {
   const [formType, setFormType] = useState('den');
   const [detail, setDetail] = useState(null);
   const [toast, setToast] = useState(null);
-  const [kho, setKho] = useState({ query: '512/QĐ-VIETLOTT', active: '512/QĐ-VIETLOTT' });
+  const [kho, setKho] = useState({ query: '', active: '' });
   const toastTimer = useRef(null);
 
   const go = (s) => { setScreen(s); setDetail(null); };

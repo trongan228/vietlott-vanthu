@@ -1,0 +1,25 @@
+# ============================================================
+# Bộ chạy nội bộ LAN: nginx (frontend + proxy /api) + backend Go.
+# Trên máy chủ:
+#   1. Tạo backend/.env chứa DATABASE_URL (không commit).
+#   2. docker compose up -d --build
+#   3. Mở firewall cổng 80:
+#      netsh advfirewall firewall add rule name="vanthu-web" dir=in action=allow protocol=TCP localport=80
+# Người dùng LAN truy cập: http://<IP-máy-chủ>
+# ============================================================
+
+services:
+  backend:
+    build: ./backend
+    env_file: ./backend/.env   # DATABASE_URL lấy từ đây
+    environment:
+      PORT: 10000              # ghi đè PORT trong .env cho khớp proxy của nginx
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
